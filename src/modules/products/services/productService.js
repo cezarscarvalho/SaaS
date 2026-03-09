@@ -1,93 +1,24 @@
 import { supabase } from "@/lib/supabase";
 
-/**
- * UPLOAD DE IMAGEM
- * Faz o upload para o bucket 'product-images' e retorna a URL pública
- */
-
-
-export async function uploadProductImage(file, companyId) {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-
-    // Criando o caminho com a ID da empresa (Pasta por empresa)
-    const filePath = `${companyId}/${fileName}`;
-
-    const { data, error } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file);
+export const createProduct = async (productData) => {
+    // productData deve conter: nome, preco, estoque_atual, company_id
+    const { data, error } = await supabase
+        .from('produtos')
+        .insert([productData])
+        .select()
+        .single();
 
     if (error) throw error;
-
-    const { data: publicUrl } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
-
-    return publicUrl.publicUrl;
-}
-
-/**
- * LISTAR PRODUTOS (Multi-tenant)
- */
-export async function getProducts(companyId) {
-    const { data, error } = await supabase
-        .from("produtos")
-        .select("*")
-        .eq("company_id", companyId)
-        .order("nome");
-
-    if (error) {
-        console.error("Erro ao buscar produtos:", error);
-        return [];
-    }
     return data;
-}
+};
 
-/**
- * CRIAR PRODUTO
- */
-export async function createProduct(product) {
+export const getProducts = async (companyId) => {
     const { data, error } = await supabase
-        .from("produtos")
-        .insert([product])
-        .select();
+        .from('produtos')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error("Erro ao criar produto:", error);
-        return null;
-    }
-    return data[0];
-}
-
-/**
- * ATUALIZAR PRODUTO
- */
-export async function updateProduct(id, updates) {
-    const { data, error } = await supabase
-        .from("produtos")
-        .update(updates)
-        .eq("id", id)
-        .select();
-
-    if (error) {
-        console.error("Erro ao atualizar produto:", error);
-        return null;
-    }
-    return data[0];
-}
-
-/**
- * DELETAR PRODUTO
- */
-export async function deleteProduct(id) {
-    const { error } = await supabase
-        .from("produtos")
-        .delete()
-        .eq("id", id);
-
-    if (error) {
-        console.error("Erro ao deletar produto:", error);
-        return false;
-    }
-    return true;
-}
+    if (error) throw error;
+    return data;
+};

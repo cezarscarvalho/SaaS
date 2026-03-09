@@ -1,29 +1,30 @@
 import { supabase } from "@/lib/supabase";
 
-export async function getDashboardMetrics(companyId) {
-    // 1. Total de vendas hoje
-    const today = new Date().toISOString().split('T')[0];
+export const getDashboardMetrics = async (companyId) => {
+    try {
+        // 1. Total de Produtos
+        const { count: totalProdutos } = await supabase
+            .from('produtos')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', companyId);
 
-    const { data: sales, error: salesError } = await supabase
-        .from("pedidos")
-        .select("total")
-        .eq("company_id", companyId)
-        .gte("created_at", today);
+        // 2. Alerta de Estoque Baixo (Exemplo: menos de 5 unidades)
+        const { count: estoqueBaixo } = await supabase
+            .from('produtos')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', companyId)
+            .lt('estoque_atual', 5);
 
-    // 2. Produtos com estoque baixo (menor que 5 unidades)
-    const { count: lowStockCount, error: stockError } = await supabase
-        .from("produtos")
-        .select("*", { count: 'exact', head: true })
-        .eq("company_id", companyId)
-        .lt("estoque_atual", 5);
+        // Aqui você pode adicionar buscas de vendas, faturamento, etc.
 
-    if (salesError || stockError) throw new Error("Erro ao buscar métricas");
-
-    const totalSalesToday = sales.reduce((acc, curr) => acc + Number(curr.total), 0);
-
-    return {
-        totalSalesToday,
-        lowStockCount,
-        totalOrdersToday: sales.length
-    };
-}
+        return {
+            totalProdutos: totalProdutos || 0,
+            estoqueBaixo: estoqueBaixo || 0,
+            vendasHoje: 0, // Placeholder para quando criarmos a tabela de vendas
+            faturamento: 0  // Placeholder
+        };
+    } catch (error) {
+        console.error("Erro ao carregar métricas:", error);
+        return null;
+    }
+};

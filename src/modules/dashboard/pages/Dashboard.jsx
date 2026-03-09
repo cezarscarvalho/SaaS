@@ -1,59 +1,64 @@
-import { useEffect, useState } from "react";
-import { getDashboardMetrics } from "../services/dashboardService";
+import React, { useEffect, useState } from 'react';
 import { useCompany } from "@/context/CompanyContext";
-import { DollarSign, Package, ShoppingBag } from "lucide-react";
+import { getDashboardMetrics } from "../services/dashboardService";
+import { Package, AlertTriangle, DollarSign, TrendingUp } from 'lucide-react';
 
-export default function Dashboard() {
-    const { company } = useCompany();
-    const [metrics, setMetrics] = useState({ totalSalesToday: 0, lowStockCount: 0, totalOrdersToday: 0 });
+const Dashboard = () => {
+    const { companyId, loadingCompany } = useCompany();
+    const [metrics, setMetrics] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function load() {
-            if (!company) return;
-            try {
-                const data = await getDashboardMetrics(company.id);
+        if (companyId) {
+            getDashboardMetrics(companyId).then(data => {
                 setMetrics(data);
-            } catch (err) { console.error(err); }
-            finally { setLoading(false); }
+                setLoading(false);
+            });
         }
-        load();
-    }, [company]);
+    }, [companyId]);
+
+    if (loadingCompany || loading) {
+        return <div className="p-8 text-gray-500">Carregando painel de controle...</div>;
+    }
+
+    const cards = [
+        { title: "Produtos Ativos", value: metrics?.totalProdutos, icon: <Package />, color: "bg-blue-500" },
+        { title: "Estoque Crítico", value: metrics?.estoqueBaixo, icon: <AlertTriangle />, color: "bg-red-500" },
+        { title: "Vendas (Hoje)", value: "R$ 0,00", icon: <DollarSign />, color: "bg-green-500" },
+        { title: "Performance", value: "0%", icon: <TrendingUp />, color: "bg-purple-500" },
+    ];
 
     return (
-        <div className="p-6 text-white">
-            <h1 className="text-3xl font-bold mb-8">Dashboard: {company?.name}</h1>
+        <div className="p-6">
+            <header className="mb-8">
+                <h1 className="text-2xl font-bold text-gray-800">Painel de Gestão</h1>
+                <p className="text-gray-500 text-sm">Bem-vindo à sua tabacaria digital.</p>
+            </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                {/* Card 1: Vendas do Dia */}
-                <div className="bg-slate-800 p-6 rounded-2xl border border-emerald-500/20 shadow-lg">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-emerald-500/10 rounded-lg text-emerald-500"><DollarSign /></div>
-                        <p className="text-slate-400 font-medium">Vendas Hoje</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {cards.map((card, index) => (
+                    <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                        <div className={`p-3 rounded-lg text-white ${card.color}`}>
+                            {card.icon}
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-500 font-medium">{card.title}</p>
+                            <p className="text-2xl font-bold text-gray-800">{card.value}</p>
+                        </div>
                     </div>
-                    <p className="text-3xl font-bold mt-4">R$ {metrics.totalSalesToday.toFixed(2)}</p>
-                </div>
+                ))}
+            </div>
 
-                {/* Card 2: Estoque Baixo */}
-                <div className="bg-slate-800 p-6 rounded-2xl border border-red-500/20 shadow-lg">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-red-500/10 rounded-lg text-red-500"><Package /></div>
-                        <p className="text-slate-400 font-medium">Alertas de Estoque</p>
-                    </div>
-                    <p className="text-3xl font-bold mt-4">{metrics.lowStockCount} <span className="text-sm font-normal text-slate-500">itens críticos</span></p>
-                </div>
-
-                {/* Card 3: Volume de Pedidos */}
-                <div className="bg-slate-800 p-6 rounded-2xl border border-blue-500/20 shadow-lg">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-500/10 rounded-lg text-blue-400"><ShoppingBag /></div>
-                        <p className="text-slate-400 font-medium">Pedidos Hoje</p>
-                    </div>
-                    <p className="text-3xl font-bold mt-4">{metrics.totalOrdersToday}</p>
-                </div>
-
+            <div className="mt-8 bg-indigo-50 border border-indigo-100 p-6 rounded-xl">
+                <h2 className="text-indigo-800 font-semibold mb-2 text-lg">Próximos Passos do SaaS</h2>
+                <ul className="text-indigo-600 text-sm space-y-2 list-disc ml-4">
+                    <li>Cadastrar os primeiros produtos para ver o contador subir.</li>
+                    <li>Configurar a tabela de **Vendas** no Supabase.</li>
+                    <li>Implementar o PDV (Frente de Caixa) para movimentar o estoque.</li>
+                </ul>
             </div>
         </div>
     );
-}
+};
+
+export default Dashboard;
