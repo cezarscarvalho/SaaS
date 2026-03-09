@@ -36,7 +36,7 @@ export default function AdminLayout() {
             <Package size={20} /> Produtos
           </Link>
 
-          <Link to="/admin/orders" className="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition-all">
+          <Link to="/admin/PDV" className="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition-all">
             <ShoppingCart size={20} /> Vendas
           </Link>
 

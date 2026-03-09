@@ -26,8 +26,8 @@ const Dashboard = () => {
     const cards = [
         { title: "Produtos Ativos", value: metrics?.totalProdutos, icon: <Package />, color: "bg-blue-500", path: "/admin/products" },
         { title: "Estoque Crítico", value: metrics?.estoqueBaixo, icon: <AlertTriangle />, color: "bg-red-500", path: "/admin/products" },
-        { title: "Vendas (PDV)", value: "Abrir Caixa", icon: <DollarSign />, color: "bg-green-600", path: "/admin/pdv" },
-        { title: "Desempenho", value: "100%", icon: <TrendingUp />, color: "bg-purple-500", path: "/admin" },
+        { title: "Vendas (PDV)", value: "Abrir Caixa", icon: <DollarSign />, color: "bg-green-500", path: "/admin/pdv" }, // AJUSTADO AQUI
+        { title: "Performance", value: "100%", icon: <TrendingUp />, color: "bg-purple-500", path: "/admin" },
     ];
 
     return (
