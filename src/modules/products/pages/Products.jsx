@@ -1,4 +1,4 @@
-import { supabase } from "../core/supabaseClient"; // Ajuste o caminho conforme seu projeto
+import { supabase } from "../../core/supabaseClient"; // Ajuste o caminho conforme seu projeto
 
 const handleAddProduct = async (productData) => {
     try {
