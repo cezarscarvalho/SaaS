@@ -1,18 +1,26 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { fileURLToPath } from 'url'
 import path from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      // Isso permite que você use '@' em vez de '../../'
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
   build: {
-    // Garante que o build seja limpo a cada tentativa
-    outDir: 'dist',
-    emptyOutDir: true,
+    // Isso ajuda a dar erros mais claros se algo falhar
+    sourcemap: true,
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return
+        warn(warning)
+      }
+    }
   }
 })

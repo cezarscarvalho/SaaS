@@ -1,4 +1,4 @@
-import { supabase } from "../../../core/supabaseClient";
+import { supabase } from "@/lib/supabase";
 
 // 1. Criar o cabeçalho do pedido
 export async function createOrder(orderData) {

@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useCompany } from "../context/CompanyContext";
+import { useCompany } from "@/context/CompanyContext";
 
 export default function RoleGuard({ children, allowedRoles }) {
     const { role, loadingCompany } = useCompany();

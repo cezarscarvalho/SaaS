@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { Mail, Check, AlertTriangle, Save, Store, ShieldCheck, Globe, MessageSquare } from 'lucide-react';
-import ForcePasswordChange from '../ForcePasswordChange';
+import ForcePasswordChange from '@/components/admin/ForcePasswordChange';
 
 export default function Settings({ session, settingsData, refreshFunc }) {
     const [activeTab, setActiveTab] = useState('store'); // 'store' | 'email' | 'password'

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { Search, Send, UserCheck, UserMinus, MessageSquare, ShoppingCart } from 'lucide-react';
-import { formatarNumeroWhats } from '../../utils/whatsapp';
+import { formatarNumeroWhats } from '@/utils/whatsapp';
 
 export default function Collections() {
     const [clients, setClients] = useState([]);

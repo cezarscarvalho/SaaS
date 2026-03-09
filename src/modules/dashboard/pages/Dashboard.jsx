@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getDashboardMetrics } from "../services/dashboardService";
-import { useCompany } from "../../../context/CompanyContext";
+import { useCompany } from "@/context/CompanyContext";
 import { DollarSign, Package, ShoppingBag } from "lucide-react";
 
 export default function Dashboard() {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getOrders, createOrder, addOrderItems } from "../services/orderService";
-import { useCompany } from "../../../context/CompanyContext";
+import { getOrders, createOrder, addOrderItems } from "@/services/orderService";
+import { useCompany } from "@/context/CompanyContext";
 
 export default function Orders() {
     const { company } = useCompany();

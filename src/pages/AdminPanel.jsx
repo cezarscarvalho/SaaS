@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { supabase } from '../core/supabaseClient';
+import { supabase } from '@/lib/supabaseclient';
 import {
     Package, ClipboardList, LogOut, Truck, LayoutDashboard,
     MessageCircle, TrendingUp, RefreshCw, Users, Settings as SettingsIcon,

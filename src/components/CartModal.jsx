@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Plus, Minus, Trash2, MessageCircle, Store, User } from 'lucide-react';
-import { formatarNumeroWhats } from '../utils/whatsapp';
+import { formatarNumeroWhats } from '@/utils/whatsapp';
 
 export default function CartModal({ isOpen, onClose, cart, updateQuantity, removeItem, onCheckoutStarted, settingsData }) {
     const [isCheckingOut, setIsCheckingOut] = useState(false);

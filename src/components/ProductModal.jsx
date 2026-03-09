@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 
 export default function ProductModal({ isOpen, onClose, onSuccess }) {
     const [loading, setLoading] = useState(false);

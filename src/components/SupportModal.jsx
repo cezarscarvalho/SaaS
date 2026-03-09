@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, MessageCircle, Send, CheckCircle2 } from 'lucide-react';
-import { supabase } from '../lib/supabaseClient';
-import { formatarNumeroWhats } from '../utils/whatsapp';
+import { supabase } from '@/lib/supabase';
+import { formatarNumeroWhats } from '@/utils/whatsapp';
 
 export default function SupportModal({ isOpen, onClose, settingsData }) {
     const [formData, setFormData] = useState({

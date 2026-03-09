@@ -1,4 +1,4 @@
-import { supabase } from "../../../core/supabaseClient";
+import { supabase } from "@/lib/supabase";
 
 /**
  * UPLOAD DE IMAGEM

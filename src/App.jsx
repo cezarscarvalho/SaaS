@@ -1,17 +1,17 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { CompanyProvider } from "./context/CompanyContext";
+import { CompanyProvider } from "@/context/CompanyContext";
 
 // Segurança e Layout
-import AdminLayout from "./layouts/AdminLayout";
-import ProtectedRoute from "./components/ProtectedRoute";
-import RoleGuard from "./components/RoleGuard";
-import AccessDenied from "./pages/AccessDenied";
+import AdminLayout from "@/layouts/AdminLayout";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleGuard from "@/components/RoleGuard";
+import AccessDenied from "@/pages/AccessDenied";
 
 // Módulos
-import Dashboard from "./modules/dashboard/pages/Dashboard";
-import Products from "./modules/products/pages/Products";
-import Settings from "./modules/settings/pages/Settings";
-import Login from "./pages/auth/Login";
+import Dashboard from "@/modules/dashboard/pages/Dashboard";
+import Products from "@/modules/products/pages/Products";
+import Settings from "@/modules/settings/pages/Settings";
+import Login from "@/pages/auth/Login";
 
 function App() {
   return (

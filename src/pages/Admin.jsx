@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { supabase } from '../core/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { Link } from 'react-router-dom';
 import { useCompany } from "../../context/CompanyContext";
 

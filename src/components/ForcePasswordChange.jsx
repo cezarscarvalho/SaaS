@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { Lock, Eye, EyeOff, Check, X, ShieldAlert } from 'lucide-react';
 
 export default function ForcePasswordChange({ onComplete, variant = 'fullscreen' }) {

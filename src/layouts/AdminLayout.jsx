@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
-import { useCompany } from "../context/CompanyContext"; // Verifique se o caminho está certo
-import { supabase } from "../core/supabaseClient";
+import { useCompany } from "@/context/CompanyContext";
+import { supabase } from "@/lib/supabase";
 import {
   LayoutDashboard,
   Package,

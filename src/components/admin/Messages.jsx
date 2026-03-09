@@ -1,7 +1,7 @@
 import React from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { Mail, MailOpen, Trash2, Clock, MessageCircle } from 'lucide-react';
-import { formatarNumeroWhats } from '../../utils/whatsapp';
+import { formatarNumeroWhats } from '@/utils/whatsapp';
 
 export default function Messages({ messagesData, refreshFunc }) {
     const messages = messagesData || [];

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { Printer, Calendar, Search, Filter, AlertTriangle } from 'lucide-react';
 
 export default function PrintOrders() {
