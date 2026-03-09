@@ -1,0 +1,21 @@
+/* Diretivas essenciais do Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset para garantir que o Dashboard ocupe a tela toda sem bordas estranhas */
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: flex-start;
+  /* Alinha o conteúdo no topo, não no centro */
+  min-width: 320px;
+  min-height: 100vh;
+}
