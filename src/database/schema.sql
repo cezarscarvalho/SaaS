@@ -85,3 +85,32 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+  -- ==========================================================
+-- SEÇÃO DE MANUTENÇÃO E GESTÃO DE ACESSOS (GUIA RÁPIDO)
+-- Use estes comandos no SQL Editor do Supabase para gestão manual
+-- ==========================================================
+
+/* 1. LISTAR TODOS OS USUÁRIOS E SEUS CARGOS:
+  SELECT id, full_name, role FROM public.profiles;
+
+  2. PROMOVER UM USUÁRIO A ADMINISTRADOR:
+  -- (Substitua o UUID pelo ID real do usuário)
+  UPDATE public.profiles 
+  SET role = 'admin' 
+  WHERE id = 'SEU_UUID_AQUI';
+
+  3. REBAIXAR UM USUÁRIO A VENDEDOR:
+  UPDATE public.profiles 
+  SET role = 'vendedor' 
+  WHERE id = 'SEU_UUID_AQUI';
+
+  4. VINCULAR UM USUÁRIO A UMA EMPRESA ESPECÍFICA:
+  UPDATE public.profiles 
+  SET empresa_id = 'UUID_DA_EMPRESA' 
+  WHERE id = 'UUID_DO_USUARIO';
+*/
+
+-- DICA DE SEGURANÇA: 
+-- O Trigger 'on_auth_user_created' garante que todo novo cadastro 
+-- comece como 'vendedor' por padrão (Princípio do Privilégio Mínimo).
