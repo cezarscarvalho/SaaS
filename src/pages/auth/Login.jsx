@@ -1,139 +1,122 @@
 import React, { useState } from 'react';
 import { supabase } from "@/lib/supabase";
-import { useNavigate } from "react-router-dom";
-import { LogIn, Lock, Mail, AlertCircle, Eye, EyeOff, Send } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { LogIn, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
 
 const Login = () => {
-    const [loading, setLoading] = useState(false);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState(null);
-    const [resetSent, setResetSent] = useState(false); // Estado para confirmação de envio
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        try {
-            const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-            if (authError) throw authError;
-            navigate("/admin");
-        } catch (err) {
-            setError("E-mail ou senha incorretos.");
-        } finally {
-            setLoading(false);
-        }
-    };
 
-    // FUNÇÃO MATADORA: Recuperação de Senha
-    const handleForgotPassword = async () => {
-        if (!email) {
-            setError("Por favor, digite seu e-mail primeiro.");
-            return;
-        }
-        setLoading(true);
         try {
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/reset-password`,
+            const { data, error: authError } = await supabase.auth.signInWithPassword({
+                email: formData.email,
+                password: formData.password,
             });
-            if (error) throw error;
 
-            // Feedback de segurança: sempre dizemos que enviamos, 
-            // para não confirmar se o e-mail existe ou não na base.
-            setResetSent(true);
-            setError(null);
+            if (authError) throw authError;
+
+            // Se logou com sucesso, o CompanyContext vai detectar a sessão 
+            // e carregar os dados da empresa automaticamente.
+            navigate('/admin');
+
         } catch (err) {
-            setError("Erro ao processar solicitação.");
+            console.error("Erro na autenticação:", err.message);
+            setError("E-mail ou senha incorretos. Tente novamente.");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
-            <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-3xl shadow-xl border border-gray-100">
-                <div>
-                    <div className="mx-auto h-14 w-14 bg-indigo-100 flex items-center justify-center rounded-2xl text-indigo-600">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+
+                {/* Header do Card */}
+                <div className="p-8 text-center bg-indigo-600 text-white">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
                         <LogIn size={32} />
                     </div>
-                    <h2 className="mt-6 text-center text-3xl font-black text-gray-900 tracking-tight">SaaS Tabacaria</h2>
+                    <h1 className="text-2xl font-bold">Acesso ao SaaS</h1>
+                    <p className="text-indigo-100 mt-2 text-sm italic">Gestão de Tabacaria & Comércio</p>
                 </div>
 
-                {resetSent ? (
-                    <div className="bg-green-50 p-6 rounded-2xl text-center space-y-4">
-                        <Send className="mx-auto text-green-500" size={40} />
-                        <p className="text-green-800 font-medium">
-                            Se este e-mail estiver cadastrado, você receberá um link de recuperação em instantes.
-                        </p>
-                        <button onClick={() => setResetSent(false)} className="text-indigo-600 font-bold text-sm">Voltar para o login</button>
-                    </div>
-                ) : (
-                    <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-                        {error && (
-                            <div className="bg-red-50 border-l-4 border-red-500 p-4 flex items-center gap-3 text-red-700 text-sm rounded-r-lg">
-                                <AlertCircle size={18} />
-                                <p className="font-medium">{error}</p>
-                            </div>
-                        )}
+                <div className="p-8">
+                    {error && (
+                        <div className="mb-6 flex items-center gap-2 p-4 text-sm text-red-700 bg-red-50 rounded-lg border border-red-100 animate-shake">
+                            <AlertCircle size={18} />
+                            <span>{error}</span>
+                        </div>
+                    )}
 
-                        <div className="space-y-4">
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        {/* Campo E-mail */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">E-mail Corporativo</label>
                             <div className="relative">
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 ml-1">E-mail</label>
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none mt-5">
-                                    <Mail className="h-5 w-5 text-gray-400" />
-                                </div>
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input
-                                    type="email" required
-                                    className="appearance-none rounded-xl block w-full px-12 py-4 border border-gray-200 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                                    placeholder="exemplo@tabacaria.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    type="email"
+                                    name="email"
+                                    required
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                                    placeholder="seu@email.com"
                                 />
-                            </div>
-
-                            <div className="relative">
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 ml-1">Senha</label>
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none mt-5">
-                                    <Lock className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input
-                                    type={showPassword ? "text" : "password"} required
-                                    className="appearance-none rounded-xl block w-full px-12 py-4 border border-gray-200 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                                    placeholder="Sua senha secreta"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-4 flex items-center mt-5 text-gray-400 hover:text-indigo-600"
-                                >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-end">
-                            <button
-                                type="button"
-                                onClick={handleForgotPassword}
-                                className="text-sm font-bold text-indigo-600 hover:text-indigo-500 transition-colors"
-                            >
-                                Esqueceu a senha?
-                            </button>
+                        {/* Campo Senha */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Sua Senha</label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <input
+                                    type="password"
+                                    name="password"
+                                    required
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                                    placeholder="••••••••"
+                                />
+                            </div>
                         </div>
 
+                        {/* Botão de Entrar */}
                         <button
-                            type="submit" disabled={loading}
-                            className={`w-full flex justify-center py-4 border border-transparent text-sm font-black rounded-xl text-white shadow-lg transition-all ${loading ? 'bg-indigo-300' : 'bg-indigo-600 hover:bg-indigo-700 active:scale-95'
-                                }`}
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:shadow-none"
                         >
-                            {loading ? "PROCESSANDO..." : "ENTRAR NO SISTEMA"}
+                            {loading ? (
+                                <><Loader2 className="animate-spin" size={20} /> Autenticando...</>
+                            ) : (
+                                "Entrar no Sistema"
+                            )}
                         </button>
                     </form>
-                )}
+
+                    {/* Rodapé do Login */}
+                    <p className="mt-8 text-center text-xs text-gray-400 uppercase tracking-widest font-semibold">
+                        &copy; 2026 Tabacaria SaaS
+                    </p>
+                </div>
             </div>
         </div>
     );
