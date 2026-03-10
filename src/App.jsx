@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 // Layouts e Provedores
 import AdminLayout from "@/layouts/AdminLayout";
 import { CompanyProvider } from "@/context/CompanyContext";
-import ProtectedRoute from "@/components/admin/ProtectedRoute";
+import ProtectedRoute from "@/components/admin/ProtectedRoute.jsx";
 
 // Páginas de Autenticação
 import Login from "@/modules/auth/pages/Login";
