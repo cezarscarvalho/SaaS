@@ -1,8 +1,8 @@
-import MainLayout from "../layouts/MainLayout"
+import MainLayout from "../../../layouts/MainLayout"
 
-import CardMetric from "../components/CardMetric"
-import SalesChart from "../components/SalesChart"
-import RecentOrders from "../components/RecentOrders"
+import CardMetric from "../../../components/CardMetric"
+import SalesChart from "../../../components/SalesChart"
+import RecentOrders from "../../../components/RecentOrders"
 
 export default function Dashboard() {
 

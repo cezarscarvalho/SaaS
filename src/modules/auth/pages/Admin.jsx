@@ -3,18 +3,18 @@ import { supabase } from '@/lib/supabase';
 import { Link } from 'react-router-dom';
 import { useCompany } from "../../context/CompanyContext";
 
-import ProductModal from '../components/ProductModal';
+import ProductModal from '../../../components/ProductModal';
 import Login from '../components/Login';
-import ForcePasswordChange from '../components/ForcePasswordChange';
-import Clients from '../components/admin/Clients';
-import Suppliers from '../components/admin/Suppliers';
-import Settings from '../components/admin/Settings';
-import Orders from '../components/admin/Orders';
-import Finance from '../components/admin/Finance';
-import PrintOrders from '../components/admin/PrintOrders';
-import Messages from '../components/admin/Messages';
-import Collections from '../components/admin/Collections';
-import Logistics from '../components/admin/Logistics';
+import ForcePasswordChange from '../../../components/ForcePasswordChange';
+import Clients from '../../../components/admin/Clients';
+import Suppliers from '../../../components/admin/Suppliers';
+import Settings from '../../../components/admin/Settings';
+import Orders from '../../../components/admin/Orders';
+import Finance from '../../../components/admin/Finance';
+import PrintOrders from '../../../components/admin/PrintOrders';
+import Messages from '../../../components/admin/Messages';
+import Collections from '../../../components/admin/Collections';
+import Logistics from '../../../components/admin/Logistics';
 
 export default function Admin() {
 

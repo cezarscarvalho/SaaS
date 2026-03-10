@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import ProductCard from '../components/ProductCard';
-import CartFAB from '../components/CartFAB';
-import CartModal from '../components/CartModal';
-import CheckoutConfirmationModal from '../components/CheckoutConfirmationModal';
+import ProductCard from '../../../components/ProductCard';
+import CartFAB from '../../../components/CartFAB';
+import CartModal from '../../../components/CartModal';
+import CheckoutConfirmationModal from '../../../components/CheckoutConfirmationModal';
 import { Flame, MessageCircle, X } from 'lucide-react';
-import SupportModal from '../components/SupportModal';
-import ProductDetailsModal from '../components/ProductDetailsModal';
+import SupportModal from '../../../components/SupportModal';
+import ProductDetailsModal from '../../../components/ProductDetailsModal';
 
 export default function Home() {
     const [products, setProducts] = useState([]);
