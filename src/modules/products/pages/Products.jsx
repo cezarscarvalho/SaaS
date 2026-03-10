@@ -11,7 +11,7 @@ const Products = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [uploading, setUploading] = useState(false);
-    const [editingProduct, setEditingProduct] = useState(null); // Estado para controle de edição
+    const [editingProduct, setEditingProduct] = useState(null);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -105,16 +105,33 @@ const Products = () => {
         }
     };
 
+    // Filtro de busca
+    const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-gray-900 tracking-tight text-uppercase">Estoque Central</h1>
+                    <h1 className="text-2xl font-black text-gray-900 tracking-tight uppercase">Estoque Central</h1>
                     <p className="text-gray-500 font-medium italic text-sm">Gerencie preços e quantidades em tempo real.</p>
                 </div>
                 <button onClick={() => handleOpenModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 transition-all active:scale-95">
                     <Plus size={20} /> ADICIONAR ITEM
                 </button>
+            </div>
+
+            {/* BARRA DE BUSCA */}
+            <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                    type="text"
+                    placeholder="Buscar produto pelo nome..."
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
             </div>
 
             {/* LISTAGEM */}
@@ -130,11 +147,11 @@ const Products = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {products.map((p) => (
+                            {filteredProducts.map((p) => (
                                 <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
                                     <td className="px-6 py-4 flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden shrink-0">
-                                            {p.image_url ? <img src={p.image_url} className="h-full w-full object-cover" /> : <ImageIcon className="m-auto h-full text-gray-300" size={16} />}
+                                        <div className="h-10 w-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
+                                            {p.image_url ? <img src={p.image_url} className="h-full w-full object-cover" alt={p.name} /> : <ImageIcon className="text-gray-300" size={16} />}
                                         </div>
                                         <span className="font-bold text-gray-900 truncate max-w-[150px]">{p.name}</span>
                                     </td>
@@ -155,7 +172,7 @@ const Products = () => {
                 </div>
             </div>
 
-            {/* MODAL UNIFICADO (CADASTRO / EDIÇÃO) */}
+            {/* MODAL UNIFICADO */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl space-y-6">
@@ -167,6 +184,7 @@ const Products = () => {
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Box de Imagem */}
                             <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl p-4 bg-gray-50 hover:border-indigo-400 transition-colors">
                                 {formData.image_url ? (
                                     <div className="relative h-20 w-20">
@@ -176,7 +194,7 @@ const Products = () => {
                                 ) : (
                                     <label className="cursor-pointer flex flex-col items-center">
                                         {uploading ? <Loader2 className="animate-spin text-indigo-600" /> : <Upload className="text-gray-400" />}
-                                        <span className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-widest text-center">Alterar Foto</span>
+                                        <span className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-widest text-center">Adicionar Foto</span>
                                         <input type="file" className="hidden" accept="image/*" onChange={handleUploadImage} disabled={uploading} />
                                     </label>
                                 )}
@@ -190,4 +208,25 @@ const Products = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-[10px] font-black text-gray-400 uppercase mb-1 block">Preço de Venda</label>
-                                        <input required type="number" step="0.01" className="w-full p-4 bg-gray
+                                        <input required type="number" step="0.01" className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 font-bold outline-none focus:ring-2 focus:ring-indigo-500" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase mb-1 block">Estoque</label>
+                                        <input required type="number" className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 font-bold outline-none focus:ring-2 focus:ring-indigo-500" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" disabled={loading || uploading} className="w-full bg-indigo-600 text-white py-4 rounded-xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2">
+                                {loading ? <Loader2 className="animate-spin" size={20} /> : <Check size={20} />}
+                                {editingProduct ? "SALVAR ALTERAÇÕES" : "CADASTRAR PRODUTO"}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default Products;

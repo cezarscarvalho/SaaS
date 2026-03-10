@@ -1,89 +1,122 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';  // Importação crucial para navegação
-import { useCompany } from "@/context/CompanyContext";
-import { getDashboardMetrics } from "../services/dashboardService";
-import { Package, AlertTriangle, DollarSign, TrendingUp, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from "../../../lib/supabase";
+import {
+    DollarSign,
+    Package,
+    AlertTriangle,
+    TrendingUp,
+    ArrowUpRight,
+    Loader2
+} from 'lucide-react';
 
 const Dashboard = () => {
-    const { companyId, loadingCompany } = useCompany();
-    const [metrics, setMetrics] = useState(null);
+    const [stats, setStats] = useState({
+        totalItems: 0,
+        inventoryValue: 0,
+        lowStockCount: 0,
+        topCategory: 'Tabaco'
+    });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (companyId) {
-            getDashboardMetrics(companyId).then(data => {
-                setMetrics(data);
-                setLoading(false);
-            });
-        }
-    }, [companyId]);
+        const fetchDashboardData = async () => {
+            setLoading(true);
+            const { data, error } = await supabase.from('products').select('*');
 
-    if (loadingCompany || loading) {
-        return <div className="p-8 text-gray-500 font-medium">Carregando painel de controle...</div>;
+            if (!error && data) {
+                const totalValue = data.reduce((acc, curr) => acc + (curr.price * curr.stock), 0);
+                const lowStock = data.filter(p => p.stock < 5).length;
+
+                setStats({
+                    totalItems: data.length,
+                    inventoryValue: totalValue,
+                    lowStockCount: lowStock,
+                    topCategory: 'Tabaco' // Futuramente podemos calcular a categoria com mais itens
+                });
+            }
+            setLoading(false);
+        };
+
+        fetchDashboardData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center gap-4">
+                <Loader2 className="animate-spin text-indigo-600" size={48} />
+                <p className="text-gray-400 font-black uppercase tracking-widest text-xs">Sincronizando Dados...</p>
+            </div>
+        );
     }
 
-    // Adicionamos o 'path' para onde cada card deve levar
     const cards = [
-        { title: "Produtos Ativos", value: metrics?.totalProdutos, icon: <Package />, color: "bg-blue-500", path: "/admin/products" },
-        { title: "Estoque Crítico", value: metrics?.estoqueBaixo, icon: <AlertTriangle />, color: "bg-red-500", path: "/admin/products" },
-        { title: "Vendas (PDV)", value: "Abrir Caixa", icon: <DollarSign />, color: "bg-green-500", path: "/admin/PDV" }, // AJUSTADO AQUI
-        { title: "Performance", value: "100%", icon: <TrendingUp />, color: "bg-purple-500", path: "/admin" },
+        {
+            label: "Patrimônio em Estoque",
+            value: `R$ ${stats.inventoryValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+            icon: <DollarSign size={24} />,
+            color: "text-green-600",
+            bg: "bg-green-100",
+            description: "Valor total investido em produtos"
+        },
+        {
+            label: "Itens Cadastrados",
+            value: stats.totalItems,
+            icon: <Package size={24} />,
+            color: "text-indigo-600",
+            bg: "bg-indigo-100",
+            description: "Total de variedades no catálogo"
+        },
+        {
+            label: "Alerta de Ruptura",
+            value: stats.lowStockCount,
+            icon: <AlertTriangle size={24} />,
+            color: "text-red-600",
+            bg: "bg-red-100",
+            description: "Produtos com menos de 5 unidades"
+        }
     ];
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
-            <header className="mb-8 flex justify-between items-end">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900">Painel de Gestão</h1>
-                    <p className="text-gray-500 mt-1">Visão geral da sua tabacaria em tempo real.</p>
-                </div>
-                <div className="hidden md:block text-sm text-gray-400 font-medium">
-                    ID Empresa: <span className="text-gray-600">{companyId.split('-')[0]}...</span>
-                </div>
-            </header>
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* HEADER */}
+            <div>
+                <h1 className="text-3xl font-black text-gray-900 tracking-tight">Visão Geral</h1>
+                <p className="text-gray-500 font-medium">Bem-vindo ao centro de comando da sua tabacaria.</p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* GRID DE CARDS */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {cards.map((card, index) => (
-                    <Link
-                        key={index}
-                        to={card.path}
-                        className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md hover:border-indigo-200 transition-all group"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className={`p-3 rounded-xl text-white ${card.color} shadow-lg shadow-gray-100`}>
+                    <div key={index} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-indigo-50/50 transition-all group">
+                        <div className="flex justify-between items-start mb-6">
+                            <div className={`${card.bg} ${card.color} p-4 rounded-2xl shadow-inner`}>
                                 {card.icon}
                             </div>
-                            <div>
-                                <p className="text-sm text-gray-500 font-semibold uppercase tracking-wider">{card.title}</p>
-                                <p className="text-2xl font-bold text-gray-800">{card.value}</p>
+                            <div className="bg-gray-50 p-2 rounded-full text-gray-400 group-hover:text-indigo-600 transition-colors">
+                                <ArrowUpRight size={18} />
                             </div>
                         </div>
-                        <div className="mt-4 flex items-center text-xs font-bold text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                            GERENCIAR <ArrowRight size={14} className="ml-1" />
-                        </div>
-                    </Link>
+                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{card.label}</p>
+                        <h3 className="text-3xl font-black text-gray-900 mb-2">{card.value}</h3>
+                        <p className="text-sm text-gray-500 font-medium">{card.description}</p>
+                    </div>
                 ))}
             </div>
 
-            <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-indigo-600 p-8 rounded-3xl text-white relative overflow-hidden shadow-xl shadow-indigo-100">
-                    <div className="relative z-10">
-                        <h2 className="text-2xl font-bold mb-2">Pronto para vender?</h2>
-                        <p className="text-indigo-100 mb-6 max-w-xs">Acesse o PDV agora para realizar vendas e atualizar seu estoque automaticamente.</p>
-                        <Link to="/admin/PDV" className="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors inline-block">
-                            Ir para o Frente de Caixa
-                        </Link>
-                    </div>
-                    <DollarSign className="absolute -right-4 -bottom-4 w-32 h-32 text-indigo-500 opacity-50" />
+            {/* SEÇÃO DE ATALHOS RÁPIDOS */}
+            <div className="bg-indigo-900 rounded-[2.5rem] p-10 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl shadow-indigo-200">
+                <div className="space-y-2 text-center md:text-left">
+                    <h2 className="text-2xl font-black flex items-center gap-3 justify-center md:justify-start">
+                        <TrendingUp className="text-yellow-400" /> Pronto para vender?
+                    </h2>
+                    <p className="text-indigo-200 font-medium">Abra o PDV e comece a faturar agora mesmo.</p>
                 </div>
-
-                <div className="bg-white p-8 rounded-3xl border border-dashed border-gray-300 flex flex-col justify-center items-center text-center">
-                    <div className="bg-gray-50 p-4 rounded-full mb-4">
-                        <TrendingUp className="text-gray-400" />
-                    </div>
-                    <h3 className="font-bold text-gray-800 text-lg">Novas métricas em breve</h3>
-                    <p className="text-gray-400 text-sm max-w-xs">Estamos preparando relatórios de faturamento mensal e ticket médio.</p>
-                </div>
+                <button
+                    onClick={() => window.location.href = '/admin/pdv'}
+                    className="bg-white text-indigo-900 px-10 py-5 rounded-2xl font-black text-lg hover:bg-yellow-400 hover:text-indigo-950 transition-all shadow-lg active:scale-95"
+                >
+                    ABRIR FRENTE DE CAIXA
+                </button>
             </div>
         </div>
     );
