@@ -17,6 +17,7 @@ import Products from "./modules/products/pages/Products";
 import PDV from "./pages/admin/PDV";
 import Settings from "./modules/settings/pages/Settings";
 import SalesReport from "./modules/reports/pages/SalesReport";
+import CashierControl from "./modules/cashier/pages/CashierControl"; // Nova página de Caixa
 
 function App() {
   return (
@@ -27,6 +28,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/access-denied" element={<AccessDenied />} />
+
+          {/* Redirecionamento Inicial */}
           <Route path="/" element={<Navigate to="/admin" replace />} />
 
           {/* Área Administrativa Protegida */}
@@ -38,18 +41,19 @@ function App() {
               </ProtectedRoute>
             }
           >
-            {/* O "index" faz com que o PDV abra assim que entrar em /admin */}
+            {/* Página inicial do Admin (Abre o PDV por padrão) */}
             <Route index element={<PDV />} />
             <Route path="pdv" element={<PDV />} />
 
-            {/* Rotas Internas (Acessadas via /admin/...) */}
+            {/* Sub-rotas do Painel Administrativo */}
             <Route path="dashboard" element={<ProtectedRoute adminOnly><Dashboard /></ProtectedRoute>} />
+            <Route path="cashier" element={<CashierControl />} /> {/* Rota do Fluxo de Caixa */}
             <Route path="products" element={<ProtectedRoute adminOnly><Products /></ProtectedRoute>} />
             <Route path="reports" element={<ProtectedRoute adminOnly><SalesReport /></ProtectedRoute>} />
             <Route path="settings" element={<ProtectedRoute adminOnly><Settings /></ProtectedRoute>} />
           </Route>
 
-          {/* Rota de escape para páginas não encontradas */}
+          {/* Rota de escape para páginas inexistentes */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </CompanyProvider>

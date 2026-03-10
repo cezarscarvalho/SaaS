@@ -10,7 +10,8 @@ import {
   Menu,
   X,
   Zap,
-  BarChart3
+  BarChart3,
+  Wallet // Ícone para o Caixa
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -26,6 +27,7 @@ const AdminLayout = () => {
   const menuItems = [
     { path: "/admin/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { path: "/admin/pdv", icon: <ShoppingCart size={20} />, label: "PDV (Vendas)" },
+    { path: "/admin/cashier", icon: <Wallet size={20} />, label: "Fluxo de Caixa" }, // NOVO
     { path: "/admin/products", icon: <Package size={20} />, label: "Estoque" },
     { path: "/admin/reports", icon: <BarChart3 size={20} />, label: "Relatórios" },
     { path: "/admin/settings", icon: <Settings size={20} />, label: "Configurações" },
@@ -86,7 +88,6 @@ const AdminLayout = () => {
           </button>
         </header>
 
-        {/* ONDE AS PÁGINAS APARECEM (Outlet) */}
         <main className="flex-1 overflow-y-auto p-4 md:p-10 bg-gray-50/50">
           <Outlet />
         </main>
