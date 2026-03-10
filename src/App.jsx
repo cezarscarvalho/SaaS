@@ -13,6 +13,7 @@ import Products from "@/modules/products/pages/Products";
 import Settings from "@/modules/settings/pages/Settings";
 import Login from "@/pages/auth/Login";
 import PDV from "@/pages/admin/PDV.jsx";
+import ResetPassword from "@/pages/ResetPassword";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/access-denied" element={<AccessDenied />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Área Protegida */}
           <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
