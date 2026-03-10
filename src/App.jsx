@@ -12,7 +12,7 @@ import Dashboard from "@/modules/dashboard/pages/Dashboard";
 import Products from "@/modules/products/pages/Products";
 import Settings from "@/modules/settings/pages/Settings";
 import Login from "@/pages/auth/Login";
-import PDV from "@/pages/admin/PDV";
+import PDV from "@/pages/admin/pdv";
 
 function App() {
   return (

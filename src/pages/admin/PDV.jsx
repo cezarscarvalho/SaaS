@@ -132,4 +132,4 @@ const PDV = () => {
     );
 };
 
-export default PDV;
+export default pdv;
