@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
+// ... outros imports
 import { supabase } from "../lib/supabase";
 import {
   LayoutDashboard,
@@ -13,9 +15,17 @@ import {
 } from 'lucide-react';
 
 const AdminLayout = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  return (
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar /> {/* Seu menu lateral */}
+
+      <main className="flex-1 overflow-y-auto p-8">
+        {/* O Outlet é onde as páginas (Dashboard, PDV, etc) aparecem */}
+        <Outlet />
+      </main>
+    </div>
+  );
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -48,8 +58,8 @@ const AdminLayout = () => {
               key={item.path}
               to={item.path}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${isActive(item.path)
-                  ? 'bg-indigo-50 text-indigo-600 shadow-sm'
-                  : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
+                ? 'bg-indigo-50 text-indigo-600 shadow-sm'
+                : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
                 }`}
             >
               {item.icon}

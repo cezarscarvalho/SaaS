@@ -19,6 +19,9 @@ import SalesReport from "./modules/reports/pages/SalesReport"; // Nosso novo rel
 
 // Outras páginas
 import AccessDenied from "./modules/auth/pages/AccessDenied";
+// ... outros imports
+import { Outlet } from 'react-router-dom';
+
 
 function App() {
   return (
@@ -37,37 +40,44 @@ function App() {
             path="/admin"
             element={
               <ProtectedRoute>
-                <AdminLayout />
+                <AdminLayout /> {/* O segredo está aqui: o Layout precisa do <Outlet /> */}
               </ProtectedRoute>
             }
           >
-            {/* O PDV é a única rota que Vendedores e Admins acessam livremente */}
-            <Route index element={<PDV />} />
+            {/* Rota Padrão: Quando acessar /admin, ele abre o PDV */}
+            <index element={<PDV />} />
             <Route path="pdv" element={<PDV />} />
 
-            {/* Rotas EXCLUSIVAS para Admins (adminOnly) */}
-            <Route
-              path="dashboard"
-              element={<ProtectedRoute adminOnly><Dashboard /></ProtectedRoute>}
-            />
-            <Route
-              path="products"
-              element={<ProtectedRoute adminOnly><Products /></ProtectedRoute>}
-            />
-            <Route
-              path="reports"
-              element={<ProtectedRoute adminOnly><SalesReport /></ProtectedRoute>}
-            />
-            <Route
-              path="settings"
-              element={<ProtectedRoute adminOnly><Settings /></ProtectedRoute>}
-            />
+            {/* Rotas Específicas: Acesse via /admin/dashboard */}
+            <Route path="dashboard" element={<ProtectedRoute adminOnly><Dashboard /></ProtectedRoute>} />
+            <Route path="products" element={<ProtectedRoute adminOnly><Products /></ProtectedRoute>} />
+            <Route path="reports" element={<ProtectedRoute adminOnly><SalesReport /></ProtectedRoute>} />
+            <Route path="settings" element={<ProtectedRoute adminOnly><Settings /></ProtectedRoute>} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </CompanyProvider>
-    </BrowserRouter>
+          {/* Rotas EXCLUSIVAS para Admins (adminOnly) */}
+          <Route
+            path="dashboard"
+            element={<ProtectedRoute adminOnly><Dashboard /></ProtectedRoute>}
+          />
+          <Route
+            path="products"
+            element={<ProtectedRoute adminOnly><Products /></ProtectedRoute>}
+          />
+          <Route
+            path="reports"
+            element={<ProtectedRoute adminOnly><SalesReport /></ProtectedRoute>}
+          />
+          <Route
+            path="settings"
+            element={<ProtectedRoute adminOnly><Settings /></ProtectedRoute>}
+          />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </CompanyProvider>
+    </BrowserRouter >
   );
 }
 
