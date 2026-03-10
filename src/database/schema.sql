@@ -170,3 +170,10 @@ USING (
     AND profiles.role = 'admin'
   )
 );
+-- ATUALIZAÇÃO NO SCHEMA (v1.5 - Auditoria de Vendas)
+-- O Histórico de Vendas utiliza Joins entre:
+-- sales (Cabeçalho) -> sales_items (Linhas) -> products (Nome do Item)
+
+-- DICA DE PERFORMANCE:
+-- Se o histórico ficar lento no futuro, crie um index para a coluna created_at:
+CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at DESC);
