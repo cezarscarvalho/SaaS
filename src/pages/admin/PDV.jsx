@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from "../../lib/supabase";
 import {
-    Search,
-    ShoppingCart,
-    Trash2,
-    Plus,
-    Minus,
-    CheckCircle,
-    Image as ImageIcon,
-    Loader2
+    Search, ShoppingCart, Trash2, Plus, Minus,
+    CheckCircle, Image as ImageIcon, Loader2, Wallet, Zap
 } from 'lucide-react';
 
 const PDV = () => {
@@ -18,32 +12,20 @@ const PDV = () => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    useEffect(() => {
-        fetchProducts();
-    }, []);
+    useEffect(() => { fetchProducts(); }, []);
 
     const fetchProducts = async () => {
-        const { data } = await supabase
-            .from('products')
-            .select('*')
-            .gt('stock', 0) // Só mostra o que tem em estoque
-            .order('name');
+        const { data } = await supabase.from('products').select('*').gt('stock', 0).order('name');
         setProducts(data || []);
     };
 
     const addToCart = (product) => {
         const existing = cart.find(item => item.id === product.id);
         if (existing) {
-            setCart(cart.map(item =>
-                item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-            ));
+            setCart(cart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
         } else {
             setCart([...cart, { ...product, quantity: 1 }]);
         }
-    };
-
-    const removeFromCart = (id) => {
-        setCart(cart.filter(item => item.id !== id));
     };
 
     const updateQuantity = (id, delta) => {
@@ -61,143 +43,120 @@ const PDV = () => {
     const handleFinishSale = async (method) => {
         if (cart.length === 0) return;
         setLoading(true);
-
         try {
-            // 1. Registra a Venda
-            const { data: sale, error: saleError } = await supabase
-                .from('sales')
-                .insert([{ total_value: total, payment_method: method }])
-                .select()
-                .single();
-
+            const { data: sale, error: saleError } = await supabase.from('sales').insert([{ total_value: total, payment_method: method }]).select().single();
             if (saleError) throw saleError;
-
-            // 2. Registra os Itens da Venda
-            const itemsToInsert = cart.map(item => ({
-                sale_id: sale.id,
-                product_id: item.id,
-                quantity: item.quantity,
-                unit_price: item.price
-            }));
-
-            const { error: itemsError } = await supabase
-                .from('sales_items')
-                .insert(itemsToInsert);
-
+            const itemsToInsert = cart.map(item => ({ sale_id: sale.id, product_id: item.id, quantity: item.quantity, unit_price: item.price }));
+            const { error: itemsError } = await supabase.from('sales_items').insert(itemsToInsert);
             if (itemsError) throw itemsError;
-
-            // 3. Sucesso!
             setSuccess(true);
             setCart([]);
-            fetchProducts(); // Atualiza a lista com o novo estoque
-            setTimeout(() => setSuccess(false), 3000);
-
+            fetchProducts();
+            setTimeout(() => setSuccess(false), 2500);
         } catch (error) {
-            alert("Erro ao finalizar venda: " + error.message);
+            alert("Erro: " + error.message);
         } finally {
             setLoading(false);
         }
     };
 
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
     return (
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-120px)] gap-6 animate-in fade-in duration-500">
+        <div className="flex flex-col lg:flex-row h-[calc(100vh-100px)] gap-4 animate-in fade-in duration-500 overflow-hidden">
 
-            {/* LADO ESQUERDO: LISTA DE PRODUTOS */}
-            <div className="flex-1 space-y-4 flex flex-col min-h-0">
-                <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Buscar produto para venda..."
-                        className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+            {/* SEÇÃO DE PRODUTOS */}
+            <div className="flex-1 flex flex-col min-w-0 bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-gray-50 bg-gray-50/30 flex items-center gap-4">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                            type="text" placeholder="O que vamos vender agora?"
+                            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm transition-all"
+                            value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="hidden md:flex items-center gap-2 bg-indigo-50 px-3 py-2 rounded-xl text-indigo-600 font-black text-[10px] uppercase tracking-tighter">
+                        <Zap size={14} fill="currentColor" /> Modo Turbo ON
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-2">
-                    {filteredProducts.map(p => (
-                        <button
-                            key={p.id}
-                            onClick={() => addToCart(p)}
-                            className="bg-white p-3 rounded-2xl border border-gray-100 hover:border-indigo-500 hover:shadow-lg transition-all text-left group flex flex-col h-full"
-                        >
-                            <div className="aspect-square w-full rounded-xl bg-gray-50 mb-3 overflow-hidden flex items-center justify-center">
+                <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 content-start">
+                    {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(p => (
+                        <button key={p.id} onClick={() => addToCart(p)} className="bg-white p-2 rounded-2xl border border-gray-100 hover:border-indigo-500 hover:shadow-md transition-all text-left flex flex-col group active:scale-95">
+                            <div className="aspect-square w-full rounded-xl bg-gray-50 mb-2 overflow-hidden">
                                 {p.image_url ? (
-                                    <img src={p.image_url} className="h-full w-full object-cover group-hover:scale-110 transition-transform" />
+                                    <img src={p.image_url} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
                                 ) : (
-                                    <ImageIcon className="text-gray-200" size={32} />
+                                    <div className="h-full w-full flex items-center justify-center text-gray-200"><ImageIcon size={24} /></div>
                                 )}
                             </div>
-                            <h3 className="font-bold text-gray-800 text-sm line-clamp-2 flex-1">{p.name}</h3>
-                            <p className="text-indigo-600 font-black mt-2">R$ {Number(p.price).toFixed(2)}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase mt-1">Estoque: {p.stock}</p>
+                            <h3 className="font-bold text-gray-700 text-[11px] leading-tight line-clamp-2 h-8">{p.name}</h3>
+                            <div className="mt-1 flex justify-between items-center">
+                                <span className="text-indigo-600 font-black text-xs">R$ {Number(p.price).toFixed(2)}</span>
+                                <span className="text-[9px] font-black text-gray-300">EST: {p.stock}</span>
+                            </div>
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* LADO DIREITO: CARRINHO */}
-            <div className="w-full lg:w-96 bg-white rounded-[2.5rem] shadow-xl border border-gray-100 flex flex-col overflow-hidden">
-                <div className="p-6 border-b border-gray-50 flex items-center gap-2">
-                    <ShoppingCart className="text-indigo-600" size={24} />
-                    <h2 className="font-black text-xl text-gray-900 tracking-tight">CARRINHO</h2>
+            {/* CARRINHO LATERAL */}
+            <div className="w-full lg:w-[400px] bg-gray-900 rounded-[2rem] shadow-2xl flex flex-col overflow-hidden text-white">
+                <div className="p-6 flex justify-between items-center bg-gray-800/50 border-b border-white/5">
+                    <div className="flex items-center gap-2">
+                        <ShoppingCart className="text-indigo-400" size={20} />
+                        <span className="font-black text-sm uppercase tracking-widest">Pedido Atual</span>
+                    </div>
+                    <span className="bg-indigo-500 text-white text-[10px] px-2 py-1 rounded-full font-black">{cart.length} ITENS</span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-6 space-y-3">
                     {success ? (
-                        <div className="h-full flex flex-col items-center justify-center text-center space-y-4 animate-in zoom-in">
-                            <CheckCircle className="text-green-500" size={64} />
-                            <p className="font-black text-green-800 text-xl">VENDA REALIZADA!</p>
-                            <p className="text-gray-500 text-sm">O estoque foi baixado automaticamente.</p>
+                        <div className="h-full flex flex-col items-center justify-center text-center animate-bounce">
+                            <CheckCircle className="text-green-400 mb-2" size={48} />
+                            <p className="font-black text-lg">VENDA CONCLUÍDA!</p>
                         </div>
                     ) : cart.length > 0 ? (
                         cart.map(item => (
-                            <div key={item.id} className="flex items-center gap-3 bg-gray-50 p-3 rounded-2xl">
-                                <div className="flex-1">
-                                    <p className="font-bold text-gray-900 text-sm">{item.name}</p>
-                                    <p className="text-indigo-600 font-black text-xs">R$ {(item.price * item.quantity).toFixed(2)}</p>
+                            <div key={item.id} className="flex items-center gap-3 bg-white/5 p-3 rounded-2xl border border-white/5 animate-in slide-in-from-right-4">
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-xs truncate">{item.name}</p>
+                                    <p className="text-indigo-400 font-black text-[10px]">R$ {(item.price * item.quantity).toFixed(2)}</p>
                                 </div>
-                                <div className="flex items-center gap-2 bg-white rounded-lg border p-1">
-                                    <button onClick={() => updateQuantity(item.id, -1)} className="p-1 hover:text-indigo-600"><Minus size={14} /></button>
-                                    <span className="font-black text-sm w-4 text-center">{item.quantity}</span>
-                                    <button onClick={() => updateQuantity(item.id, 1)} className="p-1 hover:text-indigo-600"><Plus size={14} /></button>
+                                <div className="flex items-center gap-2 bg-gray-800 rounded-xl p-1">
+                                    <button onClick={() => updateQuantity(item.id, -1)} className="p-1 hover:text-white text-gray-500"><Minus size={14} /></button>
+                                    <span className="font-black text-xs w-4 text-center">{item.quantity}</span>
+                                    <button onClick={() => updateQuantity(item.id, 1)} className="p-1 hover:text-white text-gray-500"><Plus size={14} /></button>
                                 </div>
-                                <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500"><Trash2 size={18} /></button>
+                                <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-gray-600 hover:text-red-400 transition-colors"><Trash2 size={16} /></button>
                             </div>
                         ))
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center opacity-20">
-                            <ShoppingCart size={48} />
-                            <p className="font-bold mt-2">Carrinho Vazio</p>
+                        <div className="h-full flex flex-col items-center justify-center text-gray-600 border-2 border-dashed border-gray-800 rounded-3xl">
+                            <ShoppingCart size={32} className="mb-2 opacity-20" />
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-20">Aguardando itens...</p>
                         </div>
                     )}
                 </div>
 
-                <div className="p-8 bg-gray-50 space-y-4">
-                    <div className="flex justify-between items-end">
-                        <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">Total da Venda</span>
-                        <span className="text-3xl font-black text-gray-900">R$ {total.toFixed(2)}</span>
+                {/* FOOTER DO CARRINHO */}
+                <div className="p-6 bg-gray-800/80 backdrop-blur-md">
+                    <div className="flex justify-between items-center mb-6">
+                        <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">Total a Pagar</span>
+                        <span className="text-4xl font-black text-white tracking-tighter">R$ {total.toFixed(2)}</span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                         <button
-                            disabled={cart.length === 0 || loading}
-                            onClick={() => handleFinishSale('Dinheiro')}
-                            className="bg-green-600 text-white py-4 rounded-xl font-black text-xs hover:bg-green-700 transition-all active:scale-95 disabled:opacity-50"
+                            disabled={cart.length === 0 || loading} onClick={() => handleFinishSale('Dinheiro')}
+                            className="flex flex-col items-center justify-center gap-1 bg-white text-gray-900 py-4 rounded-2xl font-black text-[10px] hover:bg-green-400 transition-all active:scale-95 disabled:opacity-20"
                         >
-                            {loading ? <Loader2 className="animate-spin mx-auto" size={16} /> : "DINHEIRO"}
+                            <Wallet size={18} /> DINHEIRO
                         </button>
                         <button
-                            disabled={cart.length === 0 || loading}
-                            onClick={() => handleFinishSale('Pix')}
-                            className="bg-indigo-600 text-white py-4 rounded-xl font-black text-xs hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+                            disabled={cart.length === 0 || loading} onClick={() => handleFinishSale('Pix')}
+                            className="flex flex-col items-center justify-center gap-1 bg-indigo-500 text-white py-4 rounded-2xl font-black text-[10px] hover:bg-indigo-400 transition-all active:scale-95 disabled:opacity-20 shadow-lg shadow-indigo-500/20"
                         >
-                            {loading ? <Loader2 className="animate-spin mx-auto" size={16} /> : "PIX / CARTÃO"}
+                            {loading ? <Loader2 className="animate-spin" size={18} /> : <><Zap size={18} fill="currentColor" /> PIX / CARTÃO</>}
                         </button>
                     </div>
                 </div>
