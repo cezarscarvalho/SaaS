@@ -114,3 +114,15 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 -- DICA DE SEGURANÇA: 
 -- O Trigger 'on_auth_user_created' garante que todo novo cadastro 
 -- comece como 'vendedor' por padrão (Princípio do Privilégio Mínimo).
+
+-- ATUALIZAÇÃO NO SCHEMA (V1.1 - Configurações da Empresa)
+-- Adicionando campos de contato à tabela empresas
+ALTER TABLE IF EXISTS empresas ADD COLUMN IF NOT EXISTS endereco TEXT;
+ALTER TABLE IF EXISTS empresas ADD COLUMN IF NOT EXISTS telefone TEXT;
+
+/*
+  DICA DE GESTÃO: 
+  Para cadastrar a sua primeira empresa manualmente e poder editar no site:
+  INSERT INTO empresas (nome_fantasia, cnpj, plano) 
+  VALUES ('Minha Tabacaria', '00.000.000/0001-00', 'pro');
+*/
