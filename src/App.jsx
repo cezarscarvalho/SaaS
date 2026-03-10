@@ -13,7 +13,7 @@ import Products from "@/modules/products/pages/Products";
 import Settings from "@/modules/settings/pages/Settings";
 import Login from "@/pages/auth/Login";
 import PDV from "@/pages/admin/PDV.jsx";
-import ResetPassword from "@/pages/ResetPassword";
+import ResetPassword from "@/modules/auth/pages/ResetPassword";
 
 function App() {
   return (
