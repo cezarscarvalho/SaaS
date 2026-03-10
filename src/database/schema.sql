@@ -126,3 +126,47 @@ ALTER TABLE IF EXISTS empresas ADD COLUMN IF NOT EXISTS telefone TEXT;
   INSERT INTO empresas (nome_fantasia, cnpj, plano) 
   VALUES ('Minha Tabacaria', '00.000.000/0001-00', 'pro');
 */
+
+-- 1. Garante que a tabela empresas existe
+CREATE TABLE IF NOT EXISTS empresas (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- 2. Adiciona a coluna cnpj se ela não existir
+ALTER TABLE empresas ADD COLUMN IF NOT EXISTS cnpj TEXT;
+
+-- 3. Garante que as outras colunas de configurações também existam
+ALTER TABLE empresas ADD COLUMN IF NOT EXISTS nome_fantasia TEXT;
+ALTER TABLE empresas ADD COLUMN IF NOT EXISTS endereco TEXT;
+ALTER TABLE empresas ADD COLUMN IF NOT EXISTS telefone TEXT;
+
+-- 4. Insere uma empresa padrão para você poder editar (caso a tabela esteja vazia)
+INSERT INTO empresas (nome_fantasia, cnpj)
+SELECT 'Minha Tabacaria', '00.000.000/0000-00'
+WHERE NOT EXISTS (SELECT 1 FROM empresas LIMIT 1);
+
+-- ATUALIZAÇÃO NO SCHEMA (v1.4 - Políticas de Gestão de Unidades)
+-- Habilita o Admin a excluir ou alterar a própria empresa
+
+ALTER TABLE empresas ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can update company" 
+ON empresas FOR UPDATE 
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles 
+    WHERE profiles.id = auth.uid() 
+    AND profiles.role = 'admin'
+  )
+);
+
+CREATE POLICY "Admins can delete company" 
+ON empresas FOR DELETE 
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles 
+    WHERE profiles.id = auth.uid() 
+    AND profiles.role = 'admin'
+  )
+);
