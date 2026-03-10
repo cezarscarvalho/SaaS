@@ -1,137 +1,204 @@
 import React, { useState, useEffect } from 'react';
-import { useCompany } from "../../context/CompanyContext"; // Ajuste o caminho se necessário
-import { getProducts } from "../../modules/products/services/productService";
-import { registrarVenda } from "../../modules/sales/services/salesService";
-import { ShoppingCart, Zap, CheckCircle, Package } from 'lucide-react';
+import { supabase } from "../../lib/supabase";
+import {
+    Search,
+    ShoppingCart,
+    Trash2,
+    Plus,
+    Minus,
+    CheckCircle,
+    Image as ImageIcon,
+    Loader2
+} from 'lucide-react';
 
 const PDV = () => {
-    const { companyId, session, loadingCompany } = useCompany();
     const [products, setProducts] = useState([]);
-    const [selectedProductId, setSelectedProductId] = useState('');
-    const [quantidade, setQuantidade] = useState(1);
+    const [cart, setCart] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
-        if (companyId) {
-            getProducts(companyId).then(setProducts).catch(console.error);
+        fetchProducts();
+    }, []);
+
+    const fetchProducts = async () => {
+        const { data } = await supabase
+            .from('products')
+            .select('*')
+            .gt('stock', 0) // Só mostra o que tem em estoque
+            .order('name');
+        setProducts(data || []);
+    };
+
+    const addToCart = (product) => {
+        const existing = cart.find(item => item.id === product.id);
+        if (existing) {
+            setCart(cart.map(item =>
+                item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+            ));
+        } else {
+            setCart([...cart, { ...product, quantity: 1 }]);
         }
-    }, [companyId]);
+    };
 
-    // Se o contexto ainda estiver carregando, mostra um aviso
-    if (loadingCompany) return <div className="p-10 text-center">Carregando dados da empresa...</div>;
+    const removeFromCart = (id) => {
+        setCart(cart.filter(item => item.id !== id));
+    };
 
-    const produtoSelecionado = products.find(p => p.id === selectedProductId);
-    const total = produtoSelecionado ? produtoSelecionado.preco * quantidade : 0;
+    const updateQuantity = (id, delta) => {
+        setCart(cart.map(item => {
+            if (item.id === id) {
+                const newQty = item.quantity + delta;
+                return newQty > 0 ? { ...item, quantity: newQty } : item;
+            }
+            return item;
+        }));
+    };
 
-    const handleVenda = async (e) => {
-        e.preventDefault();
-        if (!produtoSelecionado || quantidade > (produtoSelecionado.estoque_atual || 0)) {
-            alert("Estoque insuficiente ou produto não selecionado!");
-            return;
-        }
+    const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
+    const handleFinishSale = async (method) => {
+        if (cart.length === 0) return;
         setLoading(true);
-        try {
-            await registrarVenda({
-                company_id: companyId,
-                produto_id: selectedProductId,
-                quantidade: parseInt(quantidade),
-                valor_total: total,
-                vendedor_id: session?.user?.id
-            });
 
+        try {
+            // 1. Registra a Venda
+            const { data: sale, error: saleError } = await supabase
+                .from('sales')
+                .insert([{ total_value: total, payment_method: method }])
+                .select()
+                .single();
+
+            if (saleError) throw saleError;
+
+            // 2. Registra os Itens da Venda
+            const itemsToInsert = cart.map(item => ({
+                sale_id: sale.id,
+                product_id: item.id,
+                quantity: item.quantity,
+                unit_price: item.price
+            }));
+
+            const { error: itemsError } = await supabase
+                .from('sales_items')
+                .insert(itemsToInsert);
+
+            if (itemsError) throw itemsError;
+
+            // 3. Sucesso!
             setSuccess(true);
+            setCart([]);
+            fetchProducts(); // Atualiza a lista com o novo estoque
             setTimeout(() => setSuccess(false), 3000);
-            setQuantidade(1);
-            setSelectedProductId('');
-            getProducts(companyId).then(setProducts); // Atualiza estoque na tela
+
         } catch (error) {
-            alert("Erro na venda: " + error.message);
+            alert("Erro ao finalizar venda: " + error.message);
         } finally {
             setLoading(false);
         }
     };
 
+    const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
-        <div className="p-6 max-w-5xl mx-auto">
-            <div className="mb-8">
-                <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-                    <Zap className="text-yellow-500 fill-yellow-500" /> PDV Tabacaria
-                </h1>
-                <p className="text-gray-500 font-medium">Frente de caixa rápido e eficiente.</p>
+        <div className="flex flex-col lg:flex-row h-[calc(100vh-120px)] gap-6 animate-in fade-in duration-500">
+
+            {/* LADO ESQUERDO: LISTA DE PRODUTOS */}
+            <div className="flex-1 space-y-4 flex flex-col min-h-0">
+                <div className="relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                        type="text"
+                        placeholder="Buscar produto para venda..."
+                        className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-2">
+                    {filteredProducts.map(p => (
+                        <button
+                            key={p.id}
+                            onClick={() => addToCart(p)}
+                            className="bg-white p-3 rounded-2xl border border-gray-100 hover:border-indigo-500 hover:shadow-lg transition-all text-left group flex flex-col h-full"
+                        >
+                            <div className="aspect-square w-full rounded-xl bg-gray-50 mb-3 overflow-hidden flex items-center justify-center">
+                                {p.image_url ? (
+                                    <img src={p.image_url} className="h-full w-full object-cover group-hover:scale-110 transition-transform" />
+                                ) : (
+                                    <ImageIcon className="text-gray-200" size={32} />
+                                )}
+                            </div>
+                            <h3 className="font-bold text-gray-800 text-sm line-clamp-2 flex-1">{p.name}</h3>
+                            <p className="text-indigo-600 font-black mt-2">R$ {Number(p.price).toFixed(2)}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase mt-1">Estoque: {p.stock}</p>
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col lg:flex-row">
-                {/* Lado Esquerdo - Operação */}
-                <form onSubmit={handleVenda} className="p-10 flex-1 space-y-8">
-                    <div className="space-y-4">
-                        <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Produto</label>
-                        <select
-                            className="w-full p-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none transition-all text-lg font-medium"
-                            value={selectedProductId}
-                            onChange={(e) => setSelectedProductId(e.target.value)}
-                            required
-                        >
-                            <option value="">Selecione o item...</option>
-                            {products.map(p => (
-                                <option key={p.id} value={p.id} disabled={(p.estoque_atual || 0) <= 0}>
-                                    {p.nome} - R$ {Number(p.preco).toFixed(2)} ({p.estoque_atual || 0} em estoque)
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+            {/* LADO DIREITO: CARRINHO */}
+            <div className="w-full lg:w-96 bg-white rounded-[2.5rem] shadow-xl border border-gray-100 flex flex-col overflow-hidden">
+                <div className="p-6 border-b border-gray-50 flex items-center gap-2">
+                    <ShoppingCart className="text-indigo-600" size={24} />
+                    <h2 className="font-black text-xl text-gray-900 tracking-tight">CARRINHO</h2>
+                </div>
 
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Qtd.</label>
-                            <input
-                                type="number" min="1"
-                                className="w-full p-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none text-xl font-bold"
-                                value={quantidade}
-                                onChange={(e) => setQuantidade(e.target.value)}
-                            />
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                    {success ? (
+                        <div className="h-full flex flex-col items-center justify-center text-center space-y-4 animate-in zoom-in">
+                            <CheckCircle className="text-green-500" size={64} />
+                            <p className="font-black text-green-800 text-xl">VENDA REALIZADA!</p>
+                            <p className="text-gray-500 text-sm">O estoque foi baixado automaticamente.</p>
                         </div>
-                        <div className="bg-indigo-600 p-4 rounded-2xl flex flex-col justify-center items-center text-white shadow-lg shadow-indigo-200">
-                            <span className="text-xs font-bold opacity-80 uppercase">Total a Pagar</span>
-                            <span className="text-2xl font-black">R$ {total.toFixed(2)}</span>
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading || !selectedProductId}
-                        className={`w-full py-5 rounded-2xl text-white font-black text-lg shadow-xl transition-all flex items-center justify-center gap-3 ${loading ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700 active:scale-95'
-                            }`}
-                    >
-                        {loading ? "PROCESSANDO..." : <><ShoppingCart /> FINALIZAR VENDA</>}
-                    </button>
-
-                    {success && (
-                        <div className="p-4 bg-green-50 rounded-xl flex items-center justify-center gap-2 text-green-600 font-bold animate-bounce">
-                            <CheckCircle /> VENDA REALIZADA COM SUCESSO!
+                    ) : cart.length > 0 ? (
+                        cart.map(item => (
+                            <div key={item.id} className="flex items-center gap-3 bg-gray-50 p-3 rounded-2xl">
+                                <div className="flex-1">
+                                    <p className="font-bold text-gray-900 text-sm">{item.name}</p>
+                                    <p className="text-indigo-600 font-black text-xs">R$ {(item.price * item.quantity).toFixed(2)}</p>
+                                </div>
+                                <div className="flex items-center gap-2 bg-white rounded-lg border p-1">
+                                    <button onClick={() => updateQuantity(item.id, -1)} className="p-1 hover:text-indigo-600"><Minus size={14} /></button>
+                                    <span className="font-black text-sm w-4 text-center">{item.quantity}</span>
+                                    <button onClick={() => updateQuantity(item.id, 1)} className="p-1 hover:text-indigo-600"><Plus size={14} /></button>
+                                </div>
+                                <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500"><Trash2 size={18} /></button>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="h-full flex flex-col items-center justify-center opacity-20">
+                            <ShoppingCart size={48} />
+                            <p className="font-bold mt-2">Carrinho Vazio</p>
                         </div>
                     )}
-                </form>
+                </div>
 
-                {/* Lado Direito - Detalhes */}
-                <div className="bg-gray-50 p-10 lg:w-80 border-t lg:border-t-0 lg:border-l border-gray-100 flex flex-col justify-between">
-                    <div>
-                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 text-center lg:text-left">Resumo</h3>
-                        {produtoSelecionado ? (
-                            <div className="space-y-6">
-                                <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-200">
-                                    <Package className="text-indigo-500 mb-2" size={24} />
-                                    <p className="text-sm font-bold text-gray-800 leading-tight">{produtoSelecionado.nome}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-xs text-gray-400 font-bold uppercase">Preço Unitário</p>
-                                    <p className="text-lg font-bold text-gray-700">R$ {Number(produtoSelecionado.preco).toFixed(2)}</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <p className="text-sm text-gray-400 italic text-center lg:text-left mt-20">Aguardando seleção de produto...</p>
-                        )}
+                <div className="p-8 bg-gray-50 space-y-4">
+                    <div className="flex justify-between items-end">
+                        <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">Total da Venda</span>
+                        <span className="text-3xl font-black text-gray-900">R$ {total.toFixed(2)}</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <button
+                            disabled={cart.length === 0 || loading}
+                            onClick={() => handleFinishSale('Dinheiro')}
+                            className="bg-green-600 text-white py-4 rounded-xl font-black text-xs hover:bg-green-700 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                            {loading ? <Loader2 className="animate-spin mx-auto" size={16} /> : "DINHEIRO"}
+                        </button>
+                        <button
+                            disabled={cart.length === 0 || loading}
+                            onClick={() => handleFinishSale('Pix')}
+                            className="bg-indigo-600 text-white py-4 rounded-xl font-black text-xs hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                            {loading ? <Loader2 className="animate-spin mx-auto" size={16} /> : "PIX / CARTÃO"}
+                        </button>
                     </div>
                 </div>
             </div>
