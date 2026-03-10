@@ -18,12 +18,17 @@ const SalesHistory = () => {
 
     const fetchSales = async () => {
         setLoading(true);
+        // Busca simples sem o nome do produto primeiro para testar a conexão
         const { data, error } = await supabase
             .from('sales')
-            .select('*, sales_items(*, products(name))')
+            .select('*')
             .order('created_at', { ascending: false });
 
-        if (!error) setSales(data);
+        if (error) {
+            console.error("Erro no Supabase:", error.message);
+        } else {
+            setSales(data || []);
+        }
         setLoading(false);
     };
 

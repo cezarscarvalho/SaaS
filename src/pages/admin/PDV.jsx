@@ -44,8 +44,16 @@ const PDV = () => {
         if (cart.length === 0) return;
         setLoading(true);
         try {
-            const { data: sale, error: saleError } = await supabase.from('sales').insert([{ total_value: total, payment_method: method }]).select().single();
-            if (saleError) throw saleError;
+            const { data: sale, error: saleError } = await supabase
+                .from('sales')
+                .insert([{
+                    total_value: total,
+                    payment_method: method,
+                    // Se você tiver o empresa_id no contexto, envie aqui:
+                    // empresa_id: profile.empresa_id 
+                }])
+                .select()
+                .single();
             const itemsToInsert = cart.map(item => ({ sale_id: sale.id, product_id: item.id, quantity: item.quantity, unit_price: item.price }));
             const { error: itemsError } = await supabase.from('sales_items').insert(itemsToInsert);
             if (itemsError) throw itemsError;
