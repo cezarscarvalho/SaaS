@@ -60,3 +60,28 @@ CREATE OR REPLACE TRIGGER trigger_baixa_estoque
 AFTER INSERT ON sales_items
 FOR EACH ROW
 EXECUTE FUNCTION atualizar_estoque_pos_venda();
+
+-- 7. TABELA DE PERFIS (Extensão do Auth.Users)
+-- Gerencia cargos e vínculo com empresas
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  full_name TEXT,
+  role TEXT DEFAULT 'vendedor', -- 'admin' ou 'vendedor'
+  empresa_id UUID REFERENCES empresas(id)
+);
+
+-- 8. AUTOMAÇÃO: CRIAR PERFIL AUTOMÁTICO
+-- Sempre que um usuário confirmar o e-mail, o Supabase cria o perfil dele aqui
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, role)
+  VALUES (new.id, new.raw_user_meta_data->>'full_name', 'vendedor');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();

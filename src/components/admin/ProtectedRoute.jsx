@@ -1,42 +1,53 @@
-import LoadingScreen from "../LoadingScreen";
+import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { supabase } from "../../lib/supabase"; // Saia de admin, saia de components e entre em lib
-import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabase";
 
-export default function ProtectedRoute({ children }) {
+export default function ProtectedRoute({ children, adminOnly = false }) {
     const [session, setSession] = useState(null);
+    const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // 1. Checa a sessão atual ao carregar
-        const checkSession = async () => {
-            const { data } = await supabase.auth.getSession();
-            setSession(data.session);
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session) {
+                setSession(session);
+                // Busca o cargo (role) do usuário na nossa tabela de perfis
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .single();
+
+                setProfile(profileData);
+            }
             setLoading(false);
         };
 
-        checkSession();
+        checkAuth();
 
-        // 2. ESCUTA mudanças (Login/Logout) em tempo real
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
-            setLoading(false);
         });
 
-        // Limpa o "ouvinte" ao fechar o componente
         return () => subscription.unsubscribe();
     }, []);
 
     if (loading) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#0f172a] text-white">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500"></div>
+            <div className="flex h-screen items-center justify-center bg-gray-50">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-indigo-600"></div>
             </div>
         );
     }
-    if (loading) return <LoadingScreen />;
-    if (!session) {
-        return <Navigate to="/login" replace />;
+
+    // Se não estiver logado, vai para o login
+    if (!session) return <Navigate to="/login" replace />;
+
+    // Se a rota for apenas para Admin e o usuário for Vendedor, bloqueia
+    if (adminOnly && profile?.role !== 'admin') {
+        return <Navigate to="/access-denied" replace />;
     }
 
     return children;
