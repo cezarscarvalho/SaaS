@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 // Layouts e Provedores
 import AdminLayout from "./layouts/AdminLayout";
 import { CompanyProvider } from "./context/CompanyContext";
-import ProtectedRoute from "./components/admin/ProtectedRoute";
+import ProtectedRoute from "./components/admin/ProtectedRoute.jsx";
 
 // Páginas de Autenticação
 import Login from "./modules/auth/pages/Login";
@@ -15,6 +15,7 @@ import Dashboard from "./modules/dashboard/pages/Dashboard";
 import Products from "./modules/products/pages/Products";
 import PDV from "./pages/admin/PDV";
 import Settings from "./modules/settings/pages/Settings";
+import SalesReport from "./modules/reports/pages/SalesReport"; // Nosso novo relatório
 
 // Outras páginas
 import AccessDenied from "./modules/auth/pages/AccessDenied";
@@ -29,7 +30,6 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/access-denied" element={<AccessDenied />} />
 
-          {/* Redirecionamento Inicial */}
           <Route path="/" element={<Navigate to="/admin" replace />} />
 
           {/* Área Administrativa Protegida */}
@@ -41,20 +41,29 @@ function App() {
               </ProtectedRoute>
             }
           >
-            {/* O "index" faz com que o Dashboard seja a página inicial de /admin */}
-            <Route index element={<Dashboard />} />
-
-            {/* Rota do PDV - Frente de Caixa */}
+            {/* O PDV é a única rota que Vendedores e Admins acessam livremente */}
+            <Route index element={<PDV />} />
             <Route path="pdv" element={<PDV />} />
 
-            {/* Gestão de Produtos e Estoque */}
-            <Route path="products" element={<Products />} />
-
-            {/* Configurações do Sistema */}
-            <Route path="settings" element={<Settings />} />
+            {/* Rotas EXCLUSIVAS para Admins (adminOnly) */}
+            <Route
+              path="dashboard"
+              element={<ProtectedRoute adminOnly><Dashboard /></ProtectedRoute>}
+            />
+            <Route
+              path="products"
+              element={<ProtectedRoute adminOnly><Products /></ProtectedRoute>}
+            />
+            <Route
+              path="reports"
+              element={<ProtectedRoute adminOnly><SalesReport /></ProtectedRoute>}
+            />
+            <Route
+              path="settings"
+              element={<ProtectedRoute adminOnly><Settings /></ProtectedRoute>}
+            />
           </Route>
 
-          {/* Rota de Erro 404 (Opcional) */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </CompanyProvider>
