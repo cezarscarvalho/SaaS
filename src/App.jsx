@@ -9,7 +9,7 @@ import AccessDenied from "@/pages/AccessDenied";
 
 // Módulos
 import Dashboard from "@/modules/dashboard/pages/Dashboard";
-import Products from "@/modules/products/pages/Products"; // Listagem que acabamos de criar
+import Products from "@/modules/products/pages/Products.jsx"; // Listagem que acabamos de criar
 import ProductForm from "@/modules/products/pages/Product"; // Aquele formulário de cadastro
 import Settings from "@/modules/settings/pages/Settings";
 import Login from "@/pages/auth/Login";
