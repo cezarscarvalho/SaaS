@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'; // Importação crucial para navegação
+import { Link } from 'react-router-dom';  // Importação crucial para navegação
 import { useCompany } from "@/context/CompanyContext";
 import { getDashboardMetrics } from "../services/dashboardService";
 import { Package, AlertTriangle, DollarSign, TrendingUp, ArrowRight } from 'lucide-react';
@@ -70,7 +70,7 @@ const Dashboard = () => {
                     <div className="relative z-10">
                         <h2 className="text-2xl font-bold mb-2">Pronto para vender?</h2>
                         <p className="text-indigo-100 mb-6 max-w-xs">Acesse o PDV agora para realizar vendas e atualizar seu estoque automaticamente.</p>
-                        <Link to="/admin/PDV" className="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors inline-block">
+                        <Link to="/admin/pdv" className="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors inline-block">
                             Ir para o Frente de Caixa
                         </Link>
                     </div>
