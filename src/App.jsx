@@ -1,17 +1,23 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { CompanyProvider } from "@/context/CompanyContext";
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-// Segurança e Layout
-import AdminLayout from "@/layouts/AdminLayout";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import RoleGuard from "@/components/RoleGuard";
-import AccessDenied from "@/pages/AccessDenied";
+// Layouts e Provedores
+import AdminLayout from "./layouts/AdminLayout";
+import { CompanyProvider } from "./context/CompanyContext";
+import ProtectedRoute from "./components/admin/ProtectedRoute";
 
-// Módulos
-import Dashboard from "@/modules/dashboard/pages/Dashboard";
-import Products from "@/modules/products/pages/Products"; // Listagem que acabamos de criar
-import Settings from "@/modules/settings/pages/Settings";
-import Login from "@/pages/auth/Login";
+// Páginas de Autenticação
+import Login from "./modules/auth/pages/Login";
+import ResetPassword from "./modules/auth/pages/ResetPassword";
+
+// Páginas Administrativas
+import Dashboard from "./modules/dashboard/pages/Dashboard";
+import Products from "./modules/products/pages/Products";
+import PDV from "./pages/admin/PDV"; // Certifique-se que o nome do arquivo é PDV.jsx
+import Settings from "./modules/settings/pages/Settings";
+
+// Outras páginas
+import AccessDenied from "./pages/AccessDenied";
 
 function App() {
   return (
@@ -20,12 +26,13 @@ function App() {
         <Routes>
           {/* Rotas Públicas */}
           <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/access-denied" element={<AccessDenied />} />
 
           {/* Redirecionamento Inicial */}
           <Route path="/" element={<Navigate to="/admin" replace />} />
 
-          {/* Área Protegida (SaaS Admin) */}
+          {/* Área Administrativa Protegida */}
           <Route
             path="/admin"
             element={
@@ -34,36 +41,20 @@ function App() {
               </ProtectedRoute>
             }
           >
-            {/* Dashboard: Acesso para todos os funcionários */}
-            <index element={<Dashboard />} />
+            {/* O "index" faz com que o Dashboard seja a página inicial de /admin */}
             <Route index element={<Dashboard />} />
 
-            {/* Módulo de Produtos */}
-            <Route path="products">
-              {/* Listagem principal */}
-              <Route index element={
-                <RoleGuard allowedRoles={['owner', 'admin', 'staff']}>
-                  <Products />
-                </RoleGuard>
-              } />
+            {/* Rota do PDV - Frente de Caixa */}
+            <Route path="pdv" element={<PDV />} />
 
-              {/* Cadastro de novo produto */}
-              <Route path="new" element={
-                <RoleGuard allowedRoles={['owner', 'admin']}>
-                  <ProductForm />
-                </RoleGuard>
-              } />
-            </Route>
+            {/* Gestão de Produtos e Estoque */}
+            <Route path="products" element={<Products />} />
 
-            {/* Configurações: Apenas o Dono (Owner) altera dados da empresa */}
-            <Route path="settings" element={
-              <RoleGuard allowedRoles={['owner']}>
-                <Settings />
-              </RoleGuard>
-            } />
+            {/* Configurações do Sistema */}
+            <Route path="settings" element={<Settings />} />
           </Route>
 
-          {/* Rota 404 - Caso o usuário digite algo errado */}
+          {/* Rota de Erro 404 (Opcional) */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </CompanyProvider>
