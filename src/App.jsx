@@ -17,7 +17,7 @@ import PDV from "./pages/admin/PDV";
 import Settings from "./modules/settings/pages/Settings";
 
 // Outras páginas
-import AccessDenied from "./pages/AccessDenied";
+import AccessDenied from "./modules/auth/pages/AccessDenied";
 
 function App() {
   return (
