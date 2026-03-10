@@ -1,6 +1,6 @@
-import LoadingScreen from "./LoadingScreen";
+import LoadingScreen from "../LoadingScreen";
 import { Navigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase"; // <-- Verifique se a pasta é 'core' (minúsculo)
+import { supabase } from "../../lib/supabase"; // Saia de admin, saia de components e entre em lib
 import { useEffect, useState } from "react";
 
 export default function ProtectedRoute({ children }) {

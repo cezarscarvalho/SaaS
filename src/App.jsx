@@ -2,22 +2,22 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // Layouts e Provedores
-import AdminLayout from "@/layouts/AdminLayout";
-import { CompanyProvider } from "@/context/CompanyContext";
-import ProtectedRoute from "@/components/admin/ProtectedRoute.jsx";
+import AdminLayout from "./layouts/AdminLayout";
+import { CompanyProvider } from "./context/CompanyContext";
+import ProtectedRoute from "./components/admin/ProtectedRoute";
 
 // Páginas de Autenticação
-import Login from "@/modules/auth/pages/Login";
-import ResetPassword from "@/modules/auth/pages/ResetPassword";
+import Login from "./modules/auth/pages/Login";
+import ResetPassword from "./modules/auth/pages/ResetPassword";
 
 // Páginas Administrativas
-import Dashboard from "@/modules/dashboard/pages/Dashboard";
-import Products from "@/modules/products/pages/Products";
-import PDV from "@/pages/admin/PDV"; // Certifique-se que o nome do arquivo é PDV.jsx
-import Settings from "@/modules/settings/pages/Settings";
+import Dashboard from "./modules/dashboard/pages/Dashboard";
+import Products from "./modules/products/pages/Products";
+import PDV from "./pages/admin/PDV";
+import Settings from "./modules/settings/pages/Settings";
 
 // Outras páginas
-import AccessDenied from "@/pages/AccessDenied";
+import AccessDenied from "./pages/AccessDenied";
 
 function App() {
   return (
