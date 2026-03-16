@@ -1,3 +1,9 @@
+function CashierControl() {
+    return <div>Controle de Caixa</div>;
+}
+
+export default CashierControl;  // Verifique se essa linha existe!
+
 // Trecho da função handleOpenCashier no seu CashierControl.jsx
 const handleOpenCashier = async () => {
     if (!openingValue) return alert("Digite o valor inicial!");

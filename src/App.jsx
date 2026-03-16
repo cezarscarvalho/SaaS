@@ -10,7 +10,8 @@ import Login from "./modules/auth/pages/Login";
 import Dashboard from "./modules/dashboard/pages/Dashboard";
 import Products from "./modules/products/pages/Products";
 import PDV from "./pages/admin/PDV";
-import CashierControl from "./modules/cashier/pages/CashierControl";
+import CashierControl from './modules/cashier/pages/CashierControl';
+import DadosGerais from "./modules/analytics/DadosGerais";
 
 function App() {
   return (

@@ -1,0 +1,1 @@
+export default function DadosGerais() { return <div>Teste de Build</div>; }
