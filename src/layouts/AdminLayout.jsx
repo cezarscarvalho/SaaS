@@ -27,9 +27,9 @@ const AdminLayout = () => {
   const menuItems = [
     { path: "/admin/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { path: "/admin/pdv", icon: <ShoppingCart size={20} />, label: "PDV (Vendas)" },
-    { path: "/admin/cashier", icon: <Wallet size={20} />, label: "Fluxo de Caixa" }, // NOVO
+    { path: "/admin/cashier", icon: <Wallet size={20} />, label: "Fluxo de Caixa" },
     { path: "/admin/products", icon: <Package size={20} />, label: "Estoque" },
-    { path: "/admin/reports", icon: <BarChart3 size={20} />, label: "Relatórios" },
+    { path: "/admin/reports", icon: <BarChart3 size={20} />, label: "Relatórios" },  // Verifique se o ícone BarChart3 está importado!
     { path: "/admin/settings", icon: <Settings size={20} />, label: "Configurações" },
   ];
 
@@ -53,8 +53,8 @@ const AdminLayout = () => {
               key={item.path}
               to={item.path}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${isActive(item.path)
-                  ? 'bg-indigo-50 text-indigo-600 shadow-sm'
-                  : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
+                ? 'bg-indigo-50 text-indigo-600 shadow-sm'
+                : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
                 }`}
             >
               {item.icon}
